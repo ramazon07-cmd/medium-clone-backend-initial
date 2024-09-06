@@ -204,8 +204,15 @@ def test_article_create(test_article_create_data, api_client, tokens):
     }
 
     response = client.post('/articles/', data=data, format='multipart')
+<<<<<<< HEAD
 
     assert response.status_code == status_code
+=======
+    print(response.data)
+
+    assert response.status_code == status_code
+    assert response.data
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
 
     if status_code == 201:
         assert response.status_code == status_code
@@ -215,6 +222,10 @@ def test_article_create(test_article_create_data, api_client, tokens):
         assert len(response.data['topics']) == 1
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
 @pytest.fixture()
 @pytest.mark.order(12)
 def article_retrieve_data(request, user_factory):
@@ -275,6 +286,10 @@ def test_article_retrieve(article_retrieve_data, api_client, tokens):
     access, _ = tokens(user)
     client = api_client(token=access)
     response = client.get(f'/articles/{article_id}/')
+<<<<<<< HEAD
+=======
+    print(response.data)
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
 
     assert response.status_code == status_code
 

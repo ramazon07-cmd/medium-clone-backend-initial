@@ -143,4 +143,8 @@ def test_articles_less_recommendations(articles_data, api_client, tokens):
 
     response = client.get('/articles/?is_recommend=true')
     assert response.status_code == status.HTTP_200_OK
+<<<<<<< HEAD
+=======
+    assert response.data
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
     assert response.data['count'] == 0

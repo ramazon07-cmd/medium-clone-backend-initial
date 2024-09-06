@@ -94,6 +94,10 @@ local_settings.py
 venv/
 env/
 .venv/
+<<<<<<< HEAD
+=======
+.env
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
 
 # Custom
 .vscode/

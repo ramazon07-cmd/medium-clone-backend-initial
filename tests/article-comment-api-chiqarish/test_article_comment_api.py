@@ -123,6 +123,11 @@ def test_create_comments_article(api_client, tokens, create_comments_data):
 
     response = client.post(f'/articles/{article_id}/comments/', data=comment_data, format='json')
 
+<<<<<<< HEAD
+=======
+    assert response.data
+    print(response.data)
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
     assert response.status_code == status_code
 
     if status_code == status.HTTP_201_CREATED:
@@ -384,6 +389,11 @@ def test_create_comment_with_parent(api_client, tokens, create_comment_with_pare
 
     response = client.post(f'/articles/{article_id}/comments/', data=comment_data, format='json')
 
+<<<<<<< HEAD
+=======
+    print(response.data)
+    assert response.data
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
     assert response.status_code == status_code
 
     if status_code == status.HTTP_201_CREATED:
@@ -474,6 +484,10 @@ def test_get_comment_from_article(api_client, tokens, get_comment_from_article):
 
     if status_code == status.HTTP_200_OK:
         results = response.data.get('results', [])
+<<<<<<< HEAD
+=======
+        print(response.data)
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
         assert len(results[0]["comments"]) == len(expected_comments)
         for comment in expected_comments:
             assert any(c['content'] == comment.content for c in results[0]["comments"])

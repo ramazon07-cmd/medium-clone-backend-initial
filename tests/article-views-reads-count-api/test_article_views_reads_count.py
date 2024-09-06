@@ -39,14 +39,22 @@ def test_increment_reads_count(article_data, api_client, tokens):
 
     response = client.post(f'/articles/{article_id}/read/')
 
+<<<<<<< HEAD
     assert response.status_code == status.HTTP_201_CREATED
+=======
+    assert response.status_code == status.HTTP_200_OK
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
     assert response.data['detail'] == "Maqolani o'qish soni ortdi."
 
     article.refresh_from_db()
     assert article.reads_count == initial_reads_count + 1
 
     response = client.post(f'/articles/{article_id}/read/')
+<<<<<<< HEAD
     assert response.status_code == status.HTTP_201_CREATED
+=======
+    assert response.status_code == status.HTTP_200_OK
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
     article.refresh_from_db()
     assert article.reads_count == initial_reads_count + 2
 

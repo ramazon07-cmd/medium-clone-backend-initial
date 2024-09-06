@@ -5,7 +5,10 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from rest_framework import status
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
 @pytest.mark.order(1)
 def test_via_importlib():
     loader = importlib.util.find_spec('drf_spectacular')
@@ -19,11 +22,16 @@ def test_swagger_urls_set_correctly():
     swagger_path = reverse('swagger-ui')
     redoc_path = reverse('redoc')
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
     assert schema_path == '/schema/', "Schema path is not configured correctly"
     assert swagger_path == '/swagger/', "Swagger path is not configured correctly"
     assert redoc_path == '/redoc/', "Redoc path is not configured correctly"
 
 
+<<<<<<< HEAD
 #
 # @pytest.mark.order(3)
 # @pytest.mark.django_db
@@ -42,6 +50,26 @@ def test_swagger_urls_set_correctly():
 
 @pytest.mark.order(3)
 @pytest.mark.django_db
+=======
+
+@pytest.mark.order(3)
+@pytest.mark.django_db
+def test_swagger_schema_protected(client, user_factory):
+    username = 'test'
+    password = 'random_password'
+    user = user_factory.create(username=username)
+    user.set_password(password)
+    user.save()
+
+    swagger_path = reverse('swagger-ui')
+
+    response = client.get(swagger_path)
+    assert response.status_code == status.HTTP_302_FOUND, "Swagger is not protected"
+
+
+@pytest.mark.order(4)
+@pytest.mark.django_db
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
 def test_swagger_schema(client, user_factory):
     get_user_model()
     username = 'test'
@@ -74,5 +102,9 @@ def test_swagger_schema(client, user_factory):
 
     response = client.get(schema_path)
     assert response.status_code == status.HTTP_200_OK, f"Failed to fetch Schema, received status code {response.status_code}"
+<<<<<<< HEAD
     assert 'application/vnd.oai.openapi' in response[
         'Content-Type'], f"Expected vnd.oai.openapi content, received {response['Content-Type']}"
+=======
+    assert 'application/vnd.oai.openapi' in response['Content-Type'], f"Expected vnd.oai.openapi content, received {response['Content-Type']}"
+>>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
