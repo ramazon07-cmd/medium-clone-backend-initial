@@ -79,8 +79,10 @@ def test_clap_article(clap_data, api_client, tokens):
 
     response = client.post(f'/articles/{article_id}/clap/')
 
+    print(response.data)
     assert response.status_code == status_code
     if is_clapped is not True:
+        print(response.data)
         assert response.status_code == status_code
         assert response.data['count'] == 1
     if is_clapped:

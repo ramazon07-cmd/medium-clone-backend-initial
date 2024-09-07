@@ -3,12 +3,13 @@ from rest_framework.response import Response
 from django_redis import get_redis_connection
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
-from .models import Article, TopicFollow, Topic, Comment, Favorite
+from .models import Article, TopicFollow, Topic, Comment, Favorite, Clap
 from rest_framework.exceptions import NotFound, PermissionDenied
 from .filters import ArticleFilter
 from rest_framework.decorators import action
 from django.shortcuts import get_object_or_404
-from .serializers import ArticleSerializer, CommentSerializer, ArticleDetailCommentsSerializer
+from .serializers import ArticleSerializer, CommentSerializer, ArticleDetailCommentsSerializer, ClapSerializer
+from rest_framework.views import APIView
 class ArticlesView(viewsets.ModelViewSet):
     queryset = Article.objects.filter(status__iexact="publish")
     serializer_class = ArticleSerializer
@@ -155,3 +156,32 @@ class FavoriteArticleView(generics.GenericAPIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"detail": "Maqola topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+    
+MAX_CLAPS = 50
+class ClapView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        article = get_object_or_404(Article, pk=id)
+        
+        clap, created = Clap.objects.get_or_create(user=request.user, article=article)
+        
+        if created:
+            clap.count = 1
+        else:
+            if clap.count >= MAX_CLAPS:
+                return Response({"count": MAX_CLAPS}, status=status.HTTP_201_CREATED)
+            else:
+                clap.count += 1
+        
+        clap.save()
+        return Response({"count": clap.count}, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, id):
+        article = get_object_or_404(Article, pk=id)
+        claps_deleted, _ = Clap.objects.filter(user=request.user, article=article).delete()
+
+        if claps_deleted > 0:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
