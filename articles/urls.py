@@ -6,7 +6,8 @@ from .views import (
     CreateCommentsView,
     CommentsView,
     ArticleDetailCommentsView,
-    FavoriteArticleView
+    FavoriteArticleView,
+    ClapView
 )
 
 router = DefaultRouter()
@@ -19,5 +20,5 @@ urlpatterns = [
     path('articles/comments/<int:pk>/', CommentsView.as_view({'patch': 'partial_update', 'delete': 'destroy'}), name='comment-detail'),
     path('articles/<int:article_id>/detail/comments/', ArticleDetailCommentsView.as_view(), name='article-detail-comments'),
     path('articles/<int:id>/favorite/', FavoriteArticleView.as_view(), name='favorite-article'),
-
+    path('articles/<int:id>/clap/', ClapView.as_view(), name='article-clap'),
 ]

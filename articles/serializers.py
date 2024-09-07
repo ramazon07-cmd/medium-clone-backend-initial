@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Article, Topic, TopicFollow, Comment
+from .models import Article, Topic, TopicFollow, Comment, Clap
 from users.models import CustomUser
 
 class TopicSerializer(serializers.ModelSerializer):
@@ -44,9 +44,13 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
         }
 
 class ClapSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username')
+    article = serializers.ReadOnlyField(source='article.id')
+
     class Meta:
-        model = Article
-        fields = ['id', 'title', 'claps']
+        model = Clap
+        fields = ['user', 'article', 'count']
+        read_only_fields = ['user', 'article']
 
 
 class ArticleSerializer(serializers.ModelSerializer):

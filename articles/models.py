@@ -60,7 +60,11 @@ class Article(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     comments = models.ManyToManyField(Comment, related_name='comments', blank=True)
     topics = models.ManyToManyField(Topic, related_name='articles', blank=True)
-    claps = models.ManyToManyField(CustomUser, related_name='clapped_articles', blank=True)
+    claps = models.ManyToManyField(
+        CustomUser,
+        # through='ArticleClap', 
+        related_name='clapped_articles'
+    )
 
     class Meta:
         db_table = 'article' # article table ning nomi
@@ -70,6 +74,14 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title
+
+# class ArticleClap(models.Model):
+#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+#     article = models.ForeignKey(Article, on_delete=models.CASCADE)
+#     count = models.PositiveIntegerField(default=1) 
+
+#     class Meta:
+#         unique_together = ('user', 'article')
 
 class TopicFollow(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
@@ -93,4 +105,18 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.article.title}"
+<<<<<<< HEAD
 >>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
+=======
+
+class Clap(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('user', 'article')
+
+    def __str__(self):
+        return f'{self.user.username} - {self.article.title} - {self.count}'
+>>>>>>> a27c35c (article-clap)
