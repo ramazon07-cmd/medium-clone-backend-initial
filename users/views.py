@@ -7,6 +7,7 @@ from django_redis import get_redis_connection
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
+from django.db.models import Sum
 from articles.models import Article
 from .serializers import (
     UserSerializer,
@@ -313,9 +314,17 @@ class RecommendationView(APIView):
 
         elif less_article_id:
             article = Article.objects.get(id=less_article_id)
-            # Ensure article is removed from more_recommend if it exists there
             if article in recommendation.more_recommend.all():
                 recommendation.more_recommend.remove(article)
             recommendation.less_recommend.add(article)
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class PopularAuthorsView(generics.ListAPIView):
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        authors = User.objects.annotate(total_reads=Sum('article__reads_count'))\
+                              .filter(total_reads__gt=0)\
+                              .order_by('-total_reads')[:5]
+        return authors
