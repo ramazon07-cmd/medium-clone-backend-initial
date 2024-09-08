@@ -39,6 +39,8 @@ def test_increment_reads_count(article_data, api_client, tokens):
 
     response = client.post(f'/articles/{article_id}/read/')
 
+    print(response.data)
+
     assert response.status_code == status.HTTP_200_OK
     assert response.data['detail'] == "Maqolani o'qish soni ortdi."
 

@@ -83,3 +83,11 @@ class Recommendation(models.Model):
         verbose_name = "Recommendation"
         verbose_name_plural = "Recommendations"
         ordering = ['-created_at']
+
+class ReadingHistory(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    article = models.ForeignKey('articles.Article', on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'article')

@@ -7,6 +7,7 @@ from .models import Article, TopicFollow, Topic, Comment, Favorite, Clap
 from rest_framework.exceptions import NotFound, PermissionDenied
 from .filters import ArticleFilter
 from rest_framework.decorators import action
+from users.models import ReadingHistory
 from django.shortcuts import get_object_or_404
 from .serializers import ArticleSerializer, CommentSerializer, ArticleDetailCommentsSerializer, ClapSerializer
 from rest_framework.views import APIView
@@ -43,6 +44,22 @@ class ArticlesView(viewsets.ModelViewSet):
             print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=True, methods=['post'])
+    def read(self, request, pk=None):
+        article = self.get_object()
+        article.reads_count += 1
+        article.save()
+        return Response({"detail": "Maqolani o'qish soni ortdi."}, status=status.HTTP_200_OK)
+
+    def retrieve(self, request, *args, **kwargs):
+        response = super().retrieve(request, *args, **kwargs)
+        article = self.get_object()
+        article.views_count += 1
+        article.save()
+        if request.user.is_authenticated:
+            ReadingHistory.objects.get_or_create(user=request.user, article=article)
+        return response
+
     @action(detail=True, methods=['patch'])
     def patch(self, request, *args, **kwargs):
         redis_conn = get_redis_connection('default')
@@ -52,6 +69,16 @@ class ArticlesView(viewsets.ModelViewSet):
         response = super().partial_update(request, *args, **kwargs)
         print(response.data)
         return Response(response.data, status=status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['get'])
+    def reading_history(self, request):
+        self.queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(self.queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(self.queryset, many=True)
+        return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         article = self.get_object()
