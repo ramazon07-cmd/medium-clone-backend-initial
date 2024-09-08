@@ -40,8 +40,13 @@ def test_increment_reads_count(article_data, api_client, tokens):
     response = client.post(f'/articles/{article_id}/read/')
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     assert response.status_code == status.HTTP_201_CREATED
 =======
+=======
+    print(response.data)
+
+>>>>>>> e7d92eb (article-views-reads-count)
     assert response.status_code == status.HTTP_200_OK
 >>>>>>> 5daf9e5 (Yangi fayl qo'shildi yoki eski fayl almashtirildi)
     assert response.data['detail'] == "Maqolani o'qish soni ortdi."
