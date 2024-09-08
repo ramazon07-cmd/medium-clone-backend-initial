@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate
-from rest_framework import serializers
+from rest_framework import serializers, generics
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from users.errors import BIRTH_YEAR_ERROR_MSG
@@ -134,3 +134,4 @@ class RecommendationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recommendation
         fields = ['id', 'user', 'more_recommend', 'less_recommend', 'created_at', 'updated_at']
+
