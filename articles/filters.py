@@ -4,10 +4,10 @@ from django.db import models
 from django.db.models import Q
 
 class ArticleFilter(django_filters.FilterSet):
-    is_recommend = django_filters.BooleanFilter(method='filter_is_recommend')
-    search = django_filters.CharFilter(method='filter_by_search')
-    is_reading_history = django_filters.BooleanFilter(method='filter_reading_history')
-    is_user_favorites = django_filters.BooleanFilter(method='filter_user_favorites')
+    is_recommend = django_filters.BooleanFilter(method='filter_is_recommend') # method orqali funksiyalarga ulash
+    search = django_filters.CharFilter(method='filter_by_search') # method orqali funksiyalarga ulash
+    is_reading_history = django_filters.BooleanFilter(method='filter_reading_history') # method orqali funksiyalarga ulash
+    is_user_favorites = django_filters.BooleanFilter(method='filter_user_favorites') # method orqali funksiyalarga ulash
 
 
     class Meta:

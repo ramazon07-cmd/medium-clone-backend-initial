@@ -25,6 +25,24 @@ class CustomUser(AbstractUser):
         null=True,
         blank=True
     )
+    following = models.ManyToManyField(
+        'self',
+        related_name='followers_set',
+        symmetrical=False
+    )
+
+    def is_following(self, user):
+        return self.following.filter(id=user.id).exists()
+
+    def follow(self, user):
+        if not self.is_following(user):
+            self.following.add(user)
+            self.save()
+
+    def unfollow(self, user):
+        if self.is_following(user):
+            self.following.remove(user)
+            self.save()
 
 
     def clean(self):
@@ -91,3 +109,16 @@ class ReadingHistory(models.Model):
 
     class Meta:
         unique_together = ('user', 'article')
+
+
+class Follow(models.Model):
+    follower = models.ForeignKey(CustomUser, related_name='following_set', on_delete=models.CASCADE)
+    followee = models.ForeignKey(CustomUser, related_name='follower_set', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('follower', 'followee')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.follower} follows {self.followee}"
