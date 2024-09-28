@@ -9,7 +9,7 @@ class Topic(models.Model):
     is_active = models.BooleanField(default=True)
 
     class Meta:
-        db_table = 'topic'
+        db_table = 'topic' # database ma'lumotlari
         verbose_name = "Topic"
         verbose_name_plural = "Topics"
         ordering = ['name']
@@ -71,14 +71,6 @@ class Article(models.Model):
     def __str__(self):
         return self.title
 
-# class ArticleClap(models.Model):
-#     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-#     article = models.ForeignKey(Article, on_delete=models.CASCADE)
-#     count = models.PositiveIntegerField(default=1) 
-
-#     class Meta:
-#         unique_together = ('user', 'article')
-
 class TopicFollow(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
@@ -93,7 +85,7 @@ class Favorite(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "favorite"
+        db_table = "favorite" # database ma'lumotlari
         unique_together = ('user', 'article')
         verbose_name = 'Favorite'
         verbose_name_plural = 'Favorites'

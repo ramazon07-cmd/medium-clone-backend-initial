@@ -116,7 +116,7 @@ class TopicFollowView(viewsets.ViewSet):
 
 class CreateCommentsView(generics.CreateAPIView):
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated] # serializerdan foydalanish sharti
 
     def perform_create(self, serializer):
         article_id = self.kwargs.get('article_id')
@@ -125,13 +125,13 @@ class CreateCommentsView(generics.CreateAPIView):
         if article.status != 'publish':
             raise NotFound("This article is inactive and cannot accept comments.")
 
-        # Save the serializer with user and article
+        # Serializerni user va article bilan saqlash
         serializer.save(user=self.request.user, article=article)
 
 class CommentsView(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated] # serializerdan foydalanish sharti
 
     def partial_update(self, request, *args, **kwargs):
         comment = self.get_object()
@@ -153,7 +153,7 @@ class ArticleDetailCommentsView(generics.ListAPIView):
         return Article.objects.filter(pk=article_id).prefetch_related('article_comments')
 
 class FavoriteArticleView(generics.GenericAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated] # serializerdan foydalanish sharti
 
     def post(self, request, *args, **kwargs):
         article_id = self.kwargs.get('id')
@@ -186,7 +186,7 @@ class FavoriteArticleView(generics.GenericAPIView):
     
 MAX_CLAPS = 50
 class ClapView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated] # serializerdan foydalanish sharti
 
     def post(self, request, id):
         article = get_object_or_404(Article, pk=id)

@@ -11,7 +11,7 @@ class ArticleListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ['id', 'author', 'title', 'status', 'content', 'thumbnail', 'topic_ids', 'summary', 'created_at', 'updated_at', 'topics', 'claps']
-        read_only_fields = ['id', 'status', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'status', 'created_at', 'updated_at'] # ba'zilarni o'qish
 
 class ArticleCreateSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
@@ -21,7 +21,7 @@ class ArticleCreateSerializer(serializers.ModelSerializer):
         model = Article
         fields = ['title', 'summary', 'content', 'thumbnail', 'user', 'topics']
 
-    def create(self, validated_data):
+    def create(self, validated_data): # yaatish
         return super().create(validated_data)
 
 class ArticleDetailSerializer(serializers.ModelSerializer):
@@ -32,7 +32,7 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
         model = Article
         fields = ['id', 'user', 'title', 'summary', 'content', 'status', 'thumbnail', 'topics', 'created_at', 'updated_at']
 
-    def get_user(self, obj):
+    def get_user(self, obj): # get information
         return {
             'id': obj.user.id,
             'username': obj.user.username,
@@ -50,7 +50,7 @@ class ClapSerializer(serializers.ModelSerializer):
     class Meta:
         model = Clap
         fields = ['user', 'article', 'count']
-        read_only_fields = ['user', 'article']
+        read_only_fields = ['user', 'article'] # ba'zilarni o'qish
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -73,9 +73,9 @@ class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Article
         fields = ['id', 'author', 'title', 'status', 'content', 'thumbnail', 'topic_ids', 'summary', 'created_at', 'updated_at', 'topics', 'claps']
-        read_only_fields = ['id', 'status', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'status', 'created_at', 'updated_at'] # ba'zilarni o'qish
 
-    def create(self, validated_data):
+    def create(self, validated_data): # article yaratish
         topic_ids = validated_data.pop('topic_ids', [])
         claps = validated_data.pop('claps', [])
         author = validated_data.pop('author', None)
@@ -90,25 +90,25 @@ class TopicFollowSerializer(serializers.ModelSerializer):
         model = TopicFollow
         fields = ['user', 'topic']
 
-    def create(self, validated_data):
+    def create(self, validated_data): # topic yaratish
         user = self.context['request'].user
         topic = validated_data['topic']
         follow, created = TopicFollow.objects.get_or_create(user=user, topic=topic)
         return follow
 
 class CommentSerializer(serializers.ModelSerializer):
-    article = serializers.PrimaryKeyRelatedField(read_only=True)
+    article = serializers.PrimaryKeyRelatedField(read_only=True) # articleni ulash
 
     class Meta:
         model = Comment
         fields = ['id', 'content', 'parent', 'created_at', 'article']
 
-    def create(self, validated_data):
+    def create(self, validated_data): # comment yaratish
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
 
 class ArticleDetailCommentsSerializer(serializers.ModelSerializer):
-    comments = CommentSerializer(many=True, read_only=True, source='article_comments')
+    comments = CommentSerializer(many=True, read_only=True, source='article_comments') # commentni ulash
 
     class Meta:
         model = Article

@@ -1,6 +1,7 @@
-from rest_framework import status, permissions, generics, parsers, exceptions
+from rest_framework import status, permissions, generics, parsers, exceptions, views
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from django.contrib.auth import authenticate, update_session_auth_hash
 from rest_framework.exceptions import ValidationError
 from django_redis import get_redis_connection
@@ -8,6 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
+from django.shortcuts import get_object_or_404
 from articles.models import Article
 from .serializers import (
     UserSerializer,
@@ -28,7 +30,7 @@ from .services import UserService, SendEmailService, OTPService
 from django.contrib.auth.hashers import make_password
 from secrets import token_urlsafe
 from .errors import ACTIVE_USER_NOT_FOUND_ERROR_MSG
-from .models import Recommendation
+from .models import Recommendation, Follow, CustomUser
 
 User = get_user_model()
 
@@ -45,7 +47,7 @@ User = get_user_model()
 
 class SignupView(APIView):
     serializer_class = UserSerializer
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.AllowAny,) # serializerdan foydalanish sharti
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -75,7 +77,7 @@ class SignupView(APIView):
 
 class LoginView(APIView):
     serializer_class = LoginSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny] # serializerdan foydalanish sharti
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -119,7 +121,7 @@ class UsersMe(generics.RetrieveAPIView, generics.UpdateAPIView):
     http_method_names = ['get', 'patch']
     queryset = User.objects.filter(is_active=True)
     parser_classes = [parsers.MultiPartParser]
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated,) # serializerdan foydalanish sharti
 
     def get_object(self):
         return self.request.user
@@ -148,7 +150,7 @@ class UsersMe(generics.RetrieveAPIView, generics.UpdateAPIView):
     )
 )
 class LogoutView(generics.GenericAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated] # serializerdan foydalanish sharti
 
     @extend_schema(responses=None)
     def post(self, request, *args, **kwargs):
@@ -166,7 +168,7 @@ class LogoutView(generics.GenericAPIView):
     )
 )
 class ChangePasswordView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated] # serializerdan foydalanish sharti
     serializer_class = ChangePasswordSerializer
 
     def put(self, request, *args, **kwargs):
@@ -199,7 +201,7 @@ class ChangePasswordView(APIView):
     )
 )
 class ForgotPasswordView(generics.CreateAPIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny] # serializerdan foydalanish sharti
     serializer_class = ForgotPasswordRequestSerializer
     authentication_classes = []
 
@@ -235,7 +237,7 @@ class ForgotPasswordView(generics.CreateAPIView):
     )
 )
 class ForgotPasswordVerifyView(generics.CreateAPIView):
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny] # serializerdan foydalanish sharti
     serializer_class = ForgotPasswordVerifyRequestSerializer
     authentication_classes = []
 
@@ -267,7 +269,7 @@ class ForgotPasswordVerifyView(generics.CreateAPIView):
 )
 class ResetPasswordView(generics.UpdateAPIView):
     serializer_class = ResetPasswordResponseSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.AllowAny] # serializerdan foydalanish sharti
     http_method_names = ['patch']
     authentication_classes = []
 
@@ -298,11 +300,11 @@ class ResetPasswordView(generics.UpdateAPIView):
 
 class RecommendationView(APIView):
     serializer_class = RecommendationSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated,) # serializerdan foydalanish sharti
 
     def post(self, request):
-        more_article_id = request.data.get('more_article_id')
-        less_article_id = request.data.get('less_article_id')
+        more_article_id = request.data.get('more_article_id') # ma'lumotlarni olish
+        less_article_id = request.data.get('less_article_id') # ma'lumotlarni olish
         user = request.user
         recommendation, _ = Recommendation.objects.get_or_create(user=user)
 
@@ -320,11 +322,76 @@ class RecommendationView(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class PopularAuthorsView(generics.ListAPIView):
+class PopularAuthorsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, id):
+        user_to_unfollow = get_object_or_404(User, id=id)
+        if not request.user.is_following(user_to_unfollow):
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        request.user.unfollow(user_to_unfollow)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class AuthorFollowView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        user = request.user
+        author = User.objects.get(id=id)
+        if author in user.following.all():
+            return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_400_BAD_REQUEST)
+        user.following.add(author)
+        return Response({"detail": "Mofaqqiyatli follow qilindi."}, status=status.HTTP_201_CREATED)
+        
+    def delete(self, request, id):
+        user = request.user       
+        author = User.objects.get(id=id)
+        if author not in user.following.all():
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        user.profile.following.remove(author)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    # def delete(self, request, id):
+        
+    #     user = request.user
+    #     try:
+    #         author = User.objects.get(id=id)
+    #     except User.DoesNotExist:
+    #         return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    #     if user == author:
+    #         return Response({"detail": "You cannot unfollow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+    #     if not user.following.filter(id=id).exists():
+    #         return Response({"detail": "You are not following this user."}, status=status.HTTP_400_BAD_REQUEST)
+
+    #     user.following.remove(author)
+    #     return Response({"detail": "Successfully unfollowed the user."}, status=status.HTTP_204_NO_CONTENT)
+
+class FollowersListView(generics.ListAPIView):
     serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        authors = User.objects.annotate(total_reads=Sum('article__reads_count'))\
-                              .filter(total_reads__gt=0)\
-                              .order_by('-total_reads')[:5]
-        return authors
+        return self.request.user.followers_set.all()
+
+class FollowingListView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return self.request.user.following.all()
+
+class UnfollowAuthorView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, id):
+        try:
+            user_to_unfollow = User.objects.get(id=id)
+            request.user.unfollow(user_to_unfollow)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except User.DoesNotExist:
+            return Response({"detail": "Foydalanuvchi topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+        except ValidationError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)

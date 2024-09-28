@@ -12,4 +12,8 @@ urlpatterns = [
     path('password/reset/', views.ResetPasswordView.as_view(), name='reset-password'),
     path('recommend/', views.RecommendationView.as_view(), name="recommend"),
     path('articles/popular/', views.PopularAuthorsView.as_view(), name='popular-authors'),
+    path('<int:id>/follow/', views.AuthorFollowView.as_view(), name='follow_user'),
+    path('<int:id>/follow/', views.UnfollowAuthorView.as_view(), name='unfollow_user'),
+    path('followers/', views.FollowersListView.as_view(), name='followers-list'),
+    path('following/', views.FollowingListView.as_view(), name='following_list'),
 ]
