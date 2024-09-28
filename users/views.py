@@ -337,37 +337,15 @@ class AuthorFollowView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, id):
-        user = request.user
-        author = User.objects.get(id=id)
-        if author in user.following.all():
-            return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_400_BAD_REQUEST)
-        user.following.add(author)
-        return Response({"detail": "Mofaqqiyatli follow qilindi."}, status=status.HTTP_201_CREATED)
-        
-    def delete(self, request, id):
-        user = request.user       
-        author = User.objects.get(id=id)
-        if author not in user.following.all():
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        user.profile.following.remove(author)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
-    # def delete(self, request, id):
-        
-    #     user = request.user
-    #     try:
-    #         author = User.objects.get(id=id)
-    #     except User.DoesNotExist:
-    #         return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        try:
+            author = CustomUser.objects.get(id=id)
+            if author == request.user:
+                return Response({'detail': 'You cannot follow yourself.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    #     if user == author:
-    #         return Response({"detail": "You cannot unfollow yourself."}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     if not user.following.filter(id=id).exists():
-    #         return Response({"detail": "You are not following this user."}, status=status.HTTP_400_BAD_REQUEST)
-
-    #     user.following.remove(author)
-    #     return Response({"detail": "Successfully unfollowed the user."}, status=status.HTTP_204_NO_CONTENT)
+            request.user.following.add(author)
+            return Response({'detail': 'Mofaqqiyatli follow qilindi.'}, status=status.HTTP_201_CREATED)
+        except CustomUser.DoesNotExist:
+            return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 class FollowersListView(generics.ListAPIView):
     serializer_class = UserSerializer
@@ -376,12 +354,14 @@ class FollowersListView(generics.ListAPIView):
     def get_queryset(self):
         return self.request.user.followers_set.all()
 
-class FollowingListView(generics.ListAPIView):
-    serializer_class = UserSerializer
+class FollowingListView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        return self.request.user.following.all()
+    def get(self, request):
+        user = request.user
+        following = user.following.all()
+        serializer = UserSerializer(following, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UnfollowAuthorView(APIView):
     permission_classes = [IsAuthenticated]
