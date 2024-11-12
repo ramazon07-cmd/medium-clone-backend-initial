@@ -73,18 +73,13 @@ def test_follow_author(api_client, follow_author_data, tokens):
 
     if author:
         response = client.post(f"/users/{author.id}/follow/")
-        print("Follow response:", response.data)
-        following_list = user.following.all()
-        print("Following list after follow:", following_list)
-        assert response.status_code == 201
         print(response.data)
+        assert response.status_code == status_code
         assert response.data['detail'] in ["Mofaqqiyatli follow qilindi.", "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."]
 
         client = api_client(token=access)
         followings_response = client.get("/users/following/")
-        print(followings_response.data)
-        followings_ids = [followee['id'] for followee in followings_response.data]
-
+        followings_ids = [followee['id'] for followee in followings_response.data['results']]
         assert author.id in followings_ids
 
         if status_code == status.HTTP_201_CREATED:
@@ -92,7 +87,7 @@ def test_follow_author(api_client, follow_author_data, tokens):
             client = api_client(token=access)
 
             response = client.get("/users/followers/")
-            print(response.data)
+
             assert response.status_code == status.HTTP_200_OK
             follower_ids = [follower['id'] for follower in response.data['results']]
             assert user.id in follower_ids
@@ -152,9 +147,7 @@ def test_unfollow_author(api_client, unfollow_author_data, tokens):
 
     if author:
         response = client.delete(f"/users/{author.id}/follow/")
-        print(response.data)
-        print(status_code)
-        # assert response.status_code == status_code
+        assert response.status_code == status_code
 
         if status_code == status.HTTP_204_NO_CONTENT:
             access, _ = tokens(author)
