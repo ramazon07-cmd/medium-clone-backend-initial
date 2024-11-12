@@ -343,7 +343,7 @@ class AuthorFollowView(APIView):
                 return Response({'detail': 'You cannot follow yourself.'}, status=status.HTTP_400_BAD_REQUEST)
 
             request.user.following.add(author)
-            return Response({'detail': 'Mofaqqiyatli follow qilindi.'}, status=status.HTTP_201_CREATED)
+            return Response({'detail': 'Muvaffaqiyatli follow qilindi.'}, status=status.HTTP_201_CREATED)
         except CustomUser.DoesNotExist:
             return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
