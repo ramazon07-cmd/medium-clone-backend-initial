@@ -73,23 +73,44 @@ def test_follow_author(api_client, follow_author_data, tokens):
 
     if author:
         response = client.post(f"/users/{author.id}/follow/")
-        print(response.data)
-        assert response.status_code == status_code
-        assert response.data['detail'] in ["Mofaqqiyatli follow qilindi.", "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."]
+        print("Response Status Code (Follow):", response.status_code)
+        print("Response Data (Follow):", response.data)
 
-        client = api_client(token=access)
+        # Verify follow response
+        assert response.status_code == status_code
+        assert response.data['detail'] in [
+            "Muvaffaqiyatli follow qilindi.",
+            "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."
+        ]
+
+        # Fetch followings and check if the author is followed
         followings_response = client.get("/users/following/")
-        followings_ids = [followee['id'] for followee in followings_response.data['results']]
+        print("Followings Response Status Code:", followings_response.status_code)
+        print("Followings Response Data:", followings_response.data)
+        assert followings_response.status_code == status.HTTP_200_OK
+
+        assert isinstance(followings_response.data, list), "Expected list, got: {}".format(type(followings_response.data))
+        followings_ids = [followee['id'] for followee in followings_response.data]
         assert author.id in followings_ids
 
+        # If follow was successful, check if the author sees the follower
         if status_code == status.HTTP_201_CREATED:
             access, _ = tokens(author)
             client = api_client(token=access)
 
-            response = client.get("/users/followers/")
+            followers_response = client.get("/users/followers/")
+            print("Followers Response Status Code:", followers_response.status_code)
+            print("Followers Response Data:", followers_response.data)
+            assert followers_response.status_code == status.HTTP_200_OK
 
-            assert response.status_code == status.HTTP_200_OK
-            follower_ids = [follower['id'] for follower in response.data['results']]
+            # Adjusted to handle paginated response
+            if isinstance(followers_response.data, dict):
+                followers_list = followers_response.data.get('results', [])
+            else:
+                followers_list = followers_response.data
+
+            assert isinstance(followers_list, list), "Expected list, got: {}".format(type(followers_list))
+            follower_ids = [follower['id'] for follower in followers_list]
             assert user.id in follower_ids
     else:
         response = client.post(f"/users/{author}/follow/")

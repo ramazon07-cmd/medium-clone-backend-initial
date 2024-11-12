@@ -338,13 +338,24 @@ class AuthorFollowView(APIView):
 
     def post(self, request, id):
         try:
+            # Get the author
             author = CustomUser.objects.get(id=id)
+
+            # Check if the user is trying to follow themselves
             if author == request.user:
                 return Response({'detail': 'You cannot follow yourself.'}, status=status.HTTP_400_BAD_REQUEST)
 
+            # Check if the user is already following the author
+            if request.user.following.filter(id=author.id).exists():
+                # If already following, return 200 OK
+                return Response({'detail': 'You are already following this author.'}, status=status.HTTP_200_OK)
+
+            # Add the author to the user's following list
             request.user.following.add(author)
             return Response({'detail': 'Muvaffaqiyatli follow qilindi.'}, status=status.HTTP_201_CREATED)
+
         except CustomUser.DoesNotExist:
+            # If the author does not exist
             return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 class FollowersListView(generics.ListAPIView):
