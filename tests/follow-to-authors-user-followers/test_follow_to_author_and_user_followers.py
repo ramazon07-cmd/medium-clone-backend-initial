@@ -64,7 +64,7 @@ def follow_author_data(request, user_factory):
 )
 def test_follow_author(api_client, follow_author_data, tokens):
     """
-    The function test user follow to author.
+    The function tests user follow to author.
     """
     status_code, article, user, author = follow_author_data
 
@@ -89,8 +89,14 @@ def test_follow_author(api_client, follow_author_data, tokens):
         print("Followings Response Data:", followings_response.data)
         assert followings_response.status_code == status.HTTP_200_OK
 
-        assert isinstance(followings_response.data, list), "Expected list, got: {}".format(type(followings_response.data))
-        followings_ids = [followee['id'] for followee in followings_response.data]
+        # Handle case where response data might be paginated (dictionary with 'results' key)
+        if isinstance(followings_response.data, dict):
+            followings_list = followings_response.data.get('results', [])
+        else:
+            followings_list = followings_response.data
+
+        assert isinstance(followings_list, list), "Expected list, got: {}".format(type(followings_list))
+        followings_ids = [followee['id'] for followee in followings_list]
         assert author.id in followings_ids
 
         # If follow was successful, check if the author sees the follower
@@ -115,6 +121,7 @@ def test_follow_author(api_client, follow_author_data, tokens):
     else:
         response = client.post(f"/users/{author}/follow/")
         assert response.status_code == status_code
+
 
 
 @pytest.fixture()
