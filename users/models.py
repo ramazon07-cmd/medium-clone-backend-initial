@@ -26,9 +26,7 @@ class CustomUser(AbstractUser):
         blank=True
     )
     following = models.ManyToManyField(
-        'self',
-        related_name='followers_set',
-        symmetrical=False
+        'self', related_name='followers_set', symmetrical=False, blank=True
     )
 
     def is_following(self, user):
@@ -77,7 +75,7 @@ class CustomUser(AbstractUser):
         ]
 
     def __str__(self):
-        return self.full_name or self.email or self.username
+        return self.username
 
     @property
     def full_name(self):
@@ -109,13 +107,12 @@ class ReadingHistory(models.Model):
 
 
 class Follow(models.Model):
-    follower = models.ForeignKey(CustomUser, related_name='following_set', on_delete=models.CASCADE)
-    followee = models.ForeignKey(CustomUser, related_name='follower_set', on_delete=models.CASCADE)
+    follower = models.ForeignKey(CustomUser, related_name='follows', on_delete=models.CASCADE)
+    followee = models.ForeignKey(CustomUser, related_name='followed_by', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('follower', 'followee')
-        ordering = ['-created_at']
 
     def __str__(self):
         return f"{self.follower} follows {self.followee}"

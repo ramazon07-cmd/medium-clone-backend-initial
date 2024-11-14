@@ -5,7 +5,7 @@ from django.conf import settings
 from users.errors import BIRTH_YEAR_ERROR_MSG
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from users.models import Recommendation
+from users.models import Recommendation, Follow
 
 User = get_user_model()
 
@@ -135,3 +135,16 @@ class RecommendationSerializer(serializers.ModelSerializer):
         model = Recommendation
         fields = ['id', 'user', 'more_recommend', 'less_recommend', 'created_at', 'updated_at']
 
+class FollowingSerializer(serializers.ModelSerializer):
+    followee = UserSerializer()
+
+    class Meta:
+        model = Follow
+        fields = ['followee']
+
+class FollowerSerializer(serializers.ModelSerializer):
+    follower = UserSerializer()
+
+    class Meta:
+        model = Follow
+        fields = ['follower']

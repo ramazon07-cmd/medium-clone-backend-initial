@@ -20,6 +20,7 @@ from .serializers import (
     ValidationErrorSerializer,
     TokenResponseSerializer,
     UserUpdateSerializer,
+    FollowerSerializer,
     ChangePasswordSerializer,
     ForgotPasswordRequestSerializer,
     ForgotPasswordVerifyRequestSerializer,
@@ -343,79 +344,47 @@ class PopularAuthorsView(APIView):
 
 
 class AuthorFollowView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, id):
+    def post(self, request, author_id):
+        """
+        Follow an author.
+        """
         try:
-            # Fetch the author by ID
-            author = CustomUser.objects.get(id=id)
+            author = User.objects.get(id=author_id)
+        except User.DoesNotExist:
+            return Response({"detail": "Author not found."}, status=status.HTTP_404_NOT_FOUND)
 
-            # Check if the user is trying to follow themselves
-            if author == request.user:
-                return Response(
-                    {'detail': 'You cannot follow yourself.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        if author == request.user:
+            return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Check if the user is already following the author
-            if request.user.following.filter(id=author.id).exists():
-                return Response(
-                    {'detail': 'You are already following this user.'},
-                    status=status.HTTP_400_BAD_REQUEST  # Change this to 400
-                )
+        # Check if the user is already following the author
+        if Follow.objects.filter(follower=request.user, followee=author).exists():
+            return Response({"detail": "You are already following this author."}, status=status.HTTP_200_OK)
 
-            # Add the author to the user's following list
-            request.user.following.add(author)
-            return Response(
-                {'detail': 'Muvaffaqiyatli follow qilindi.'},
-                status=status.HTTP_201_CREATED
-            )
+        # Create a follow relationship
+        Follow.objects.create(follower=request.user, followee=author)
+        return Response({"detail": "Muvaffaqiyatli follow qilindi."}, status=status.HTTP_201_CREATED)
 
-        except CustomUser.DoesNotExist:
-            # If the author does not exist, return a 404 response
-            return Response(
-                {'detail': 'User not found.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except Exception as e:
-            # Catch-all for any unexpected errors
-            return Response(
-                {'detail': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-    def delete(self, request, id):
+    def delete(self, request, author_id):
+        """
+        Unfollow an author.
+        """
         try:
-            # Fetch the author by ID
-            author = CustomUser.objects.get(id=id)
+            author = User.objects.get(id=author_id)
+        except User.DoesNotExist:
+            return Response({"detail": "Author not found."}, status=status.HTTP_404_NOT_FOUND)
 
-            # Check if the user is trying to unfollow someone they aren't following
-            if not request.user.following.filter(id=author.id).exists():
-                return Response(
-                    {'detail': 'You are not following this user.'},
-                    status=status.HTTP_404_NOT_FOUND
-                )
+        if author == request.user:
+            return Response({"detail": "You cannot unfollow yourself."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Remove the author from the user's following list
-            request.user.following.remove(author)
-            return Response(
-                {'detail': 'Unfollowed successfully.'},
-                status=status.HTTP_204_NO_CONTENT
-            )
-
-        except CustomUser.DoesNotExist:
-            # If the author does not exist, return a 404 response
-            return Response(
-                {'detail': 'User not found.'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except Exception as e:
-            # Catch-all for any unexpected errors
-            return Response(
-                {'detail': str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
+        # Check if the user is following the author
+        try:
+            follow = Follow.objects.get(follower=request.user, followee=author)
+            follow.delete()
+            return Response({"detail": "Successfully unfollowed the author."}, status=status.HTTP_204_NO_CONTENT)
+        except Follow.DoesNotExist:
+            return Response({"detail": "You are not following this author."}, status=status.HTTP_404_NOT_FOUND)
 
 class FollowersListView(generics.ListAPIView):
     serializer_class = UserSerializer
@@ -432,6 +401,13 @@ class FollowingListView(APIView):
         following = user.following.all()
         serializer = UserSerializer(following, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class FollowerListView(ListAPIView):
+    serializer_class = FollowerSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Follow.objects.filter(followee=self.request.user)
 
 class UnfollowAuthorView(APIView):
     permission_classes = [IsAuthenticated]
