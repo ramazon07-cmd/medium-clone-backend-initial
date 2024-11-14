@@ -78,7 +78,7 @@ def test_follow_author(api_client, follow_author_data, tokens):
 
         client = api_client(token=access)
         followings_response = client.get("/users/following/")
-        followings_ids = [followee['id'] for followee in followings_response.data]
+        followings_ids = [followee['id'] for followee in followings_response.data['results']]
         assert author.id in followings_ids
 
         if status_code == status.HTTP_201_CREATED:
