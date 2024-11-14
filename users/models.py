@@ -38,16 +38,19 @@ class CustomUser(AbstractUser):
         if not self.is_following(user):
             self.following.add(user)
             self.save()
+        else:
+            raise ValidationError("You are already following this user.")
 
     def unfollow(self, user):
         if self.is_following(user):
             self.following.remove(user)
             self.save()
-
+        else:
+            raise ValidationError("You are not following this user.")
 
     def clean(self):
         super().clean()
-        if self.birth_year and not (settings.BIRTH_YEAR_MIN < self.birth_year < settings.BIRTH_YEAR_MAX):
+        if self.birth_year is not None and not (settings.BIRTH_YEAR_MIN < self.birth_year < settings.BIRTH_YEAR_MAX):
             raise ValidationError(BIRTH_YEAR_ERROR_MSG)
 
     def save(self, *args, **kwargs):
@@ -55,39 +58,33 @@ class CustomUser(AbstractUser):
         super().save(*args, **kwargs)
 
     class Meta:
-            db_table = "user"
-            verbose_name = "User"
-            verbose_name_plural = "Users"
-            ordering = ["-date_joined"]
-
-            # Composite Index va Hash Index qo'shish
-            indexes = [
-                HashIndex(fields=['first_name'], name='%(class)s_first_name_hash_idx'),
-                HashIndex(fields=['last_name'], name='%(class)s_last_name_hash_idx'),
-                HashIndex(fields=['middle_name'], name='%(class)s_middle_name_hash_idx'),
-                models.Index(fields=['username'], name='%(class)s_username_idx'),
-            ]
-
-            constraints = [
-                models.CheckConstraint(
-                    check=models.Q(birth_year__gt=settings.BIRTH_YEAR_MIN) & models.Q(
-                        birth_year__lt=settings.BIRTH_YEAR_MAX),
-                    name='check_birth_year_range'
-                )
-            ]
-
+        db_table = "user"
+        verbose_name = "User"
+        verbose_name_plural = "Users"
+        ordering = ["-date_joined"]
+        indexes = [
+            HashIndex(fields=['first_name'], name='%(class)s_first_name_hash_idx'),
+            HashIndex(fields=['last_name'], name='%(class)s_last_name_hash_idx'),
+            HashIndex(fields=['middle_name'], name='%(class)s_middle_name_hash_idx'),
+            models.Index(fields=['username'], name='%(class)s_username_idx'),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(birth_year__gt=settings.BIRTH_YEAR_MIN) & models.Q(
+                    birth_year__lt=settings.BIRTH_YEAR_MAX),
+                name='check_birth_year_range'
+            )
+        ]
 
     def __str__(self):
-        """ Bu metod userning toliq ismini qaytaradi"""
-        if self.full_name:
-            return self.full_name
-        else:
-            return self.email or self.username
+        return self.full_name or self.email or self.username
 
     @property
     def full_name(self):
-        """ Usernig tioliq ismi qaytadi """
-        return f"{self.last_name} {self.first_name} {self.middle_name}"
+        """Returns the full name of the user"""
+        names = [self.first_name, self.middle_name, self.last_name]
+        return " ".join([name for name in names if name])  # Filter out empty or None values
+
 
 class Recommendation(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)

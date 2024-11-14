@@ -64,7 +64,7 @@ def follow_author_data(request, user_factory):
 )
 def test_follow_author(api_client, follow_author_data, tokens):
     """
-    The function tests user follow to author.
+    The function test user follow to author.
     """
     status_code, article, user, author = follow_author_data
 
@@ -73,55 +73,26 @@ def test_follow_author(api_client, follow_author_data, tokens):
 
     if author:
         response = client.post(f"/users/{author.id}/follow/")
-        print("Response Status Code (Follow):", response.status_code)
-        print("Response Data (Follow):", response.data)
-
-        # Verify follow response
         assert response.status_code == status_code
-        assert response.data['detail'] in [
-            "Muvaffaqiyatli follow qilindi.",
-            "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."
-        ]
+        assert response.data['detail'] in ["Muvaffaqiyatli follow qilindi.", "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."]
 
-        # Fetch followings and check if the author is followed
+        client = api_client(token=access)
         followings_response = client.get("/users/following/")
-        print("Followings Response Status Code:", followings_response.status_code)
-        print("Followings Response Data:", followings_response.data)
-        assert followings_response.status_code == status.HTTP_200_OK
-
-        # Handle case where response data might be paginated (dictionary with 'results' key)
-        if isinstance(followings_response.data, dict):
-            followings_list = followings_response.data.get('results', [])
-        else:
-            followings_list = followings_response.data
-
-        assert isinstance(followings_list, list), "Expected list, got: {}".format(type(followings_list))
-        followings_ids = [followee['id'] for followee in followings_list]
+        followings_ids = [followee['id'] for followee in followings_response.data]
         assert author.id in followings_ids
 
-        # If follow was successful, check if the author sees the follower
         if status_code == status.HTTP_201_CREATED:
             access, _ = tokens(author)
             client = api_client(token=access)
 
-            followers_response = client.get("/users/followers/")
-            print("Followers Response Status Code:", followers_response.status_code)
-            print("Followers Response Data:", followers_response.data)
-            assert followers_response.status_code == status.HTTP_200_OK
+            response = client.get("/users/followers/")
 
-            # Adjusted to handle paginated response
-            if isinstance(followers_response.data, dict):
-                followers_list = followers_response.data.get('results', [])
-            else:
-                followers_list = followers_response.data
-
-            assert isinstance(followers_list, list), "Expected list, got: {}".format(type(followers_list))
-            follower_ids = [follower['id'] for follower in followers_list]
+            assert response.status_code == status.HTTP_200_OK
+            follower_ids = [follower['id'] for follower in response.data['results']]
             assert user.id in follower_ids
     else:
         response = client.post(f"/users/{author}/follow/")
         assert response.status_code == status_code
-
 
 
 @pytest.fixture()
