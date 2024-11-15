@@ -85,7 +85,7 @@ class CustomUser(AbstractUser):
 
 
 class Recommendation(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     more_recommend = models.ManyToManyField('articles.Article', related_name='more_recommend')
     less_recommend = models.ManyToManyField('articles.Article', related_name='less_recommend')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -98,7 +98,7 @@ class Recommendation(models.Model):
         ordering = ['-created_at']
 
 class ReadingHistory(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     article = models.ForeignKey('articles.Article', on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
 
@@ -107,8 +107,8 @@ class ReadingHistory(models.Model):
 
 
 class Follow(models.Model):
-    follower = models.ForeignKey(CustomUser, related_name='follows', on_delete=models.CASCADE)
-    followee = models.ForeignKey(CustomUser, related_name='followed_by', on_delete=models.CASCADE)
+    follower = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='follows', on_delete=models.CASCADE)
+    followee = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='followed_by', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

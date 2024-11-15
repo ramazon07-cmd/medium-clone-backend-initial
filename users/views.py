@@ -344,27 +344,22 @@ class PopularAuthorsView(APIView):
 
 
 class AuthorFollowView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, author_id):
-        """
-        Follow an author.
-        """
+        user = request.user
         try:
             author = User.objects.get(id=author_id)
+            if user == author:
+                return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
+
+            user.following.add(author)  # Add the author to the user's following set
+            user.save()
+
+            return Response({"detail": "Muvaffaqiyatli follow qilindi."}, status=status.HTTP_201_CREATED)
         except User.DoesNotExist:
             return Response({"detail": "Author not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        if author == request.user:
-            return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Check if the user is already following the author
-        if Follow.objects.filter(follower=request.user, followee=author).exists():
-            return Response({"detail": "You are already following this author."}, status=status.HTTP_200_OK)
-
-        # Create a follow relationship
-        Follow.objects.create(follower=request.user, followee=author)
-        return Response({"detail": "Muvaffaqiyatli follow qilindi."}, status=status.HTTP_201_CREATED)
 
     def delete(self, request, author_id):
         """
@@ -394,13 +389,11 @@ class FollowersListView(generics.ListAPIView):
         return self.request.user.followers_set.all()
 
 class FollowingListView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def get(self, request):
         user = request.user
         following = user.following.all()
         serializer = UserSerializer(following, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({"results": serializer.data})
 
 class FollowerListView(ListAPIView):
     serializer_class = FollowerSerializer

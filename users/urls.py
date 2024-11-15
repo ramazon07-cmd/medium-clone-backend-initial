@@ -13,7 +13,7 @@ urlpatterns = [
     path('recommend/', views.RecommendationView.as_view(), name="recommend"),
     path('articles/popular/', views.PopularAuthorsView.as_view(), name='popular-authors'),
     path('<int:author_id>/follow/', views.AuthorFollowView.as_view(), name='author-follow'),
-    path('<int:id>/unfollow/', views.UnfollowAuthorView.as_view(), name='unfollow_user'),
+    path('<int:id>/unfollow/', views.UnfollowAuthorView.as_view(), name='unfollow-user'),
     path('following/', views.FollowingListView.as_view(), name='following-list'),
     path('followers/', views.FollowerListView.as_view(), name='follower-list'),
 ]

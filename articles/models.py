@@ -55,10 +55,10 @@ class Article(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     comments = models.ManyToManyField(Comment, related_name='comments', blank=True)
-    topics = models.ManyToManyField(Topic, related_name='articles', blank=True)
+    topics = models.ManyToManyField(Topic, related_name='articles', blank=True, null=True)
     claps = models.ManyToManyField(
         CustomUser,
-        # through='ArticleClap', 
+        # through='ArticleClap',
         related_name='clapped_articles'
     )
 
