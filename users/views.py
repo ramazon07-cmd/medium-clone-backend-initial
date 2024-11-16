@@ -353,13 +353,16 @@ class AuthorFollowView(APIView):
             if user == author:
                 return Response({"detail": "You cannot follow yourself."}, status=status.HTTP_400_BAD_REQUEST)
 
-            user.following.add(author)  # Add the author to the user's following set
-            user.save()
+            # Check if the user is already following the author
+            if Follow.objects.filter(follower=user, followee=author).exists():
+                return Response({"detail": "Siz allaqachon ushbu foydalanuvchini kuzatyapsiz."}, status=status.HTTP_200_OK)
+
+            # Create a new Follow object
+            Follow.objects.create(follower=user, followee=author)
 
             return Response({"detail": "Muvaffaqiyatli follow qilindi."}, status=status.HTTP_201_CREATED)
         except User.DoesNotExist:
             return Response({"detail": "Author not found."}, status=status.HTTP_404_NOT_FOUND)
-
 
     def delete(self, request, author_id):
         """
@@ -386,14 +389,21 @@ class FollowersListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return self.request.user.followers_set.all()
+        # Use the Follow model to get all users following the current user
+        return User.objects.filter(follows__followee=self.request.user)
+
+
 
 class FollowingListView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         user = request.user
-        following = user.following.all()
+        # Use the Follow model to get all users followed by the current user
+        following = User.objects.filter(followed_by__follower=user)
         serializer = UserSerializer(following, many=True)
         return Response({"results": serializer.data})
+
 
 class FollowerListView(ListAPIView):
     serializer_class = FollowerSerializer

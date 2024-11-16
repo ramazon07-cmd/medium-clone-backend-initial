@@ -136,15 +136,28 @@ class RecommendationSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'more_recommend', 'less_recommend', 'created_at', 'updated_at']
 
 class FollowingSerializer(serializers.ModelSerializer):
-    followee = UserSerializer()
+    id = serializers.ReadOnlyField(source='followee.id')
+    username = serializers.ReadOnlyField(source='followee.username')
+    first_name = serializers.ReadOnlyField(source='followee.first_name')
+    last_name = serializers.ReadOnlyField(source='followee.last_name')
+    middle_name = serializers.ReadOnlyField(source='followee.middle_name')
+    email = serializers.ReadOnlyField(source='followee.email')
+    avatar = serializers.ImageField(source='followee.avatar')
 
     class Meta:
         model = Follow
-        fields = ['followee']
+        fields = ['id', 'username', 'first_name', 'last_name', 'middle_name', 'email', 'avatar']
+
 
 class FollowerSerializer(serializers.ModelSerializer):
-    follower = UserSerializer()
+    id = serializers.ReadOnlyField(source='follower.id')
+    username = serializers.ReadOnlyField(source='follower.username')
+    first_name = serializers.ReadOnlyField(source='follower.first_name')
+    last_name = serializers.ReadOnlyField(source='follower.last_name')
+    middle_name = serializers.ReadOnlyField(source='follower.middle_name')
+    email = serializers.ReadOnlyField(source='follower.email')
+    avatar = serializers.ImageField(source='follower.avatar')
 
     class Meta:
         model = Follow
-        fields = ['follower']
+        fields = ['id', 'username', 'first_name', 'last_name', 'middle_name', 'email', 'avatar']
