@@ -69,7 +69,7 @@ class ArticlesView(viewsets.ModelViewSet):
         response = super().partial_update(request, *args, **kwargs)
         print(response.data)
         return Response(response.data, status=status.HTTP_200_OK)
-    
+
     @action(detail=False, methods=['get'])
     def reading_history(self, request):
         self.queryset = self.filter_queryset(self.get_queryset())
@@ -183,16 +183,16 @@ class FavoriteArticleView(generics.GenericAPIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"detail": "Maqola topilmadi."}, status=status.HTTP_404_NOT_FOUND)
-    
+
 MAX_CLAPS = 50
 class ClapView(APIView):
     permission_classes = [IsAuthenticated] # serializerdan foydalanish sharti
 
     def post(self, request, id):
         article = get_object_or_404(Article, pk=id)
-        
+
         clap, created = Clap.objects.get_or_create(user=request.user, article=article)
-        
+
         if created:
             clap.count = 1
         else:
@@ -200,7 +200,7 @@ class ClapView(APIView):
                 return Response({"count": MAX_CLAPS}, status=status.HTTP_201_CREATED)
             else:
                 clap.count += 1
-        
+
         clap.save()
         return Response({"count": clap.count}, status=status.HTTP_201_CREATED)
 

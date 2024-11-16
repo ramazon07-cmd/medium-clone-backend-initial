@@ -9,6 +9,7 @@ from .views import (
     FavoriteArticleView,
     ClapView
 )
+from users.views import PinView, ArchiveView
 
 router = DefaultRouter()
 router.register(r'articles', ArticlesView, basename='article')
@@ -21,4 +22,7 @@ urlpatterns = [
     path('articles/<int:article_id>/detail/comments/', ArticleDetailCommentsView.as_view(), name='article-detail-comments'),
     path('articles/<int:id>/favorite/', FavoriteArticleView.as_view(), name='favorite-article'),
     path('articles/<int:id>/clap/', ClapView.as_view(), name='article-clap'),
+    path('articles/<int:id>/archive/', ArchiveView.as_view(), name='article-archive'),
+    path('articles/<int:id>/pin/', PinView.as_view(), name='pin_article'),
+    path('articles/<int:id>/unpin/', PinView.as_view(), name='unpin_article'),
 ]

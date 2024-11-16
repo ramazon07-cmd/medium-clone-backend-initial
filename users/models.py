@@ -116,3 +116,33 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.follower} follows {self.followee}"
+
+class PinArticle(models.Model):
+    pin = models.ForeignKey('Pin', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    article = models.ForeignKey('articles.Article', on_delete=models.CASCADE)
+    count = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('pin', 'article')
+        db_table = 'pin_article'
+
+    def __str__(self):
+        return f'{self.pin.user.username} - {self.article.title}'
+
+
+class Pin(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    articles = models.ManyToManyField('articles.Article', through='PinArticle', related_name='pin_articles')
+    count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'pin'
+        verbose_name = "Pin"
+        verbose_name_plural = "Pins"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user.username} - {self.count}'

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, Recommendation
+from .models import CustomUser, Recommendation, Pin
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -10,3 +10,4 @@ class CustomUserAdmin(UserAdmin):
     ordering = ('username',)
 
 admin.site.register(Recommendation)
+admin.site.register(Pin)

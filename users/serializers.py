@@ -5,7 +5,7 @@ from django.conf import settings
 from users.errors import BIRTH_YEAR_ERROR_MSG
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from users.models import Recommendation, Follow
+from users.models import Recommendation, Follow, Pin, PinArticle
 
 User = get_user_model()
 
@@ -161,3 +161,12 @@ class FollowerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Follow
         fields = ['id', 'username', 'first_name', 'last_name', 'middle_name', 'email', 'avatar']
+
+class PinSerializer(serializers.ModelSerializer):
+    user = serializers.ReadOnlyField(source='user.username')
+    article = serializers.ReadOnlyField(source='article.id')
+
+    class Meta:
+        model = PinArticle
+        fields = ['user', 'article', 'count']
+        read_only_fields = ['user', 'article'] # ba'zilarni o'qish

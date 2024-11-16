@@ -33,7 +33,7 @@ from .services import UserService, SendEmailService, OTPService
 from django.contrib.auth.hashers import make_password
 from secrets import token_urlsafe
 from .errors import ACTIVE_USER_NOT_FOUND_ERROR_MSG
-from .models import Recommendation, Follow, CustomUser
+from .models import Recommendation, Follow, CustomUser, Pin, PinArticle
 
 User = get_user_model()
 
@@ -424,3 +424,94 @@ class UnfollowAuthorView(APIView):
             return Response({"detail": "Foydalanuvchi topilmadi."}, status=status.HTTP_404_NOT_FOUND)
         except ValidationError as e:
             return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+MAX_PINS = 50
+
+class ArchiveView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        article = get_object_or_404(Article, pk=id)
+
+        # Get or create a Pin for the user
+        pin, _ = Pin.objects.get_or_create(user=request.user)
+
+        # Now get or create a PinArticle with the associated pin
+        clap, created = PinArticle.objects.get_or_create(
+            user=request.user,
+            article=article,
+            pin=pin
+        )
+
+        if created:
+            clap.count = 1
+        else:
+            if clap.count >= MAX_PINS:
+                return Response({"count": MAX_PINS}, status=status.HTTP_200_OK)
+            else:
+                clap.count += 1
+
+        clap.save()
+        return Response({"detail": "Maqola arxivlandi."}, status=status.HTTP_200_OK)
+
+    def delete(self, request, id):
+        article = get_object_or_404(Article, pk=id)
+
+        # Delete the PinArticle associated with the user, article, and pin
+        pin = Pin.objects.filter(user=request.user).first()
+        if pin:
+            claps_deleted, _ = PinArticle.objects.filter(user=request.user, article=article, pin=pin).delete()
+        else:
+            claps_deleted = 0
+
+        if claps_deleted > 0:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+class PinView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        article = get_object_or_404(Article, pk=id)
+
+        # Get or create a Pin for the user
+        pin, _ = Pin.objects.get_or_create(user=request.user)
+
+        # Check if the article is already pinned by this user
+        if PinArticle.objects.filter(user=request.user, article=article, pin=pin).exists():
+            return Response({"detail": "Article already pinned."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Now get or create a PinArticle with the associated pin
+        clap, created = PinArticle.objects.get_or_create(
+            user=request.user,
+            article=article,
+            pin=pin
+        )
+
+        if created:
+            clap.count = 1
+        else:
+            if clap.count >= MAX_PINS:
+                return Response({"count": MAX_PINS}, status=status.HTTP_200_OK)
+            else:
+                clap.count += 1
+
+        clap.save()
+        return Response({"detail": "Maqola pin qilindi."}, status=status.HTTP_200_OK)
+
+
+    def delete(self, request, id):
+        article = get_object_or_404(Article, pk=id)
+
+        # Delete the PinArticle associated with the user, article, and pin
+        pin = Pin.objects.filter(user=request.user).first()
+        if pin:
+            claps_deleted, _ = PinArticle.objects.filter(user=request.user, article=article, pin=pin).delete()
+        else:
+            claps_deleted = 0
+
+        if claps_deleted > 0:
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response({"detail": "Maqola topilmadi.."}, status=status.HTTP_404_NOT_FOUND)
