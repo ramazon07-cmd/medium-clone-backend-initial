@@ -240,16 +240,19 @@ class ReportArticleView(APIView):
 
     def post(self, request, id):
         user = request.user
-        article = Article.objects.filter(id=id).first()
+        article = Article.objects.filter(id=id).exclude(status='trash').first()
 
         if not article:
-            return Response({"detail": "Maqola topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": "No Article matches the given query."}, status=status.HTTP_404_NOT_FOUND)
 
         if article.status == 'trash':
+            return Response({"detail": "Maqola topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+
+        if article.status == 'draft':
             return Response({"detail": "No Article matches the given query."}, status=status.HTTP_404_NOT_FOUND)
 
         if Report.objects.filter(user=user, article=article).exists():
-            return Response({"detail": "Ushbu maqola allaqachon shikoyat qilingan."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(["Ushbu maqola allaqachon shikoyat qilingan."], status=status.HTTP_400_BAD_REQUEST)
 
         report = Report.objects.create(user=user, article=article, created_at=timezone.now())
 
