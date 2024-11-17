@@ -129,7 +129,7 @@ def test_report_article_third(api_client, tokens, report_data, user_factory):
     response = client.post(f'/articles/{article.id}/report/')
     print("data response", response.data)
 
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_200_OK 
     assert response.data['detail'] == "Maqola bir nechta shikoyatlar tufayli olib tashlandi."
 
 

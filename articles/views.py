@@ -258,7 +258,7 @@ class ReportArticleView(APIView):
 
         report_count = Report.objects.filter(article=article).count()
 
-        if report_count >= 3:
+        if report_count > 3:
             article.status = 'trash'
             article.save()
             return Response({"detail": "Maqola bir nechta shikoyatlar tufayli olib tashlandi."}, status=status.HTTP_200_OK)
