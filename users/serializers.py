@@ -5,7 +5,7 @@ from django.conf import settings
 from users.errors import BIRTH_YEAR_ERROR_MSG
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from users.models import Recommendation, Follow, Pin, PinArticle
+from users.models import Recommendation, Follow, Pin, PinArticle, Notification
 
 User = get_user_model()
 
@@ -170,3 +170,8 @@ class PinSerializer(serializers.ModelSerializer):
         model = PinArticle
         fields = ['user', 'article', 'count']
         read_only_fields = ['user', 'article'] # ba'zilarni o'qish
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ['id', 'user', 'message', 'created_at', 'read_at']

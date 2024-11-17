@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import CustomUser, Recommendation, Pin
+from .models import CustomUser, Recommendation, Pin, Notification
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
@@ -11,3 +11,4 @@ class CustomUserAdmin(UserAdmin):
 
 admin.site.register(Recommendation)
 admin.site.register(Pin)
+admin.site.register(Notification)

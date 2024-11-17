@@ -1,7 +1,7 @@
-from rest_framework import status, permissions, generics, parsers, exceptions, views
+from rest_framework import status, permissions, generics, parsers, exceptions, views, mixins
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from django.contrib.auth import authenticate, update_session_auth_hash
 from rest_framework.exceptions import ValidationError
 from django_redis import get_redis_connection
@@ -13,8 +13,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from articles.models import Article
 from django.http import JsonResponse
+from django.utils import timezone
 from .serializers import (
     UserSerializer,
+    NotificationSerializer,
     RecommendationSerializer,
     LoginSerializer,
     ValidationErrorSerializer,
@@ -29,11 +31,12 @@ from .serializers import (
     ForgotPasswordResponseSerializer,
 )
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework.pagination import PageNumberPagination
 from .services import UserService, SendEmailService, OTPService
 from django.contrib.auth.hashers import make_password
 from secrets import token_urlsafe
 from .errors import ACTIVE_USER_NOT_FOUND_ERROR_MSG
-from .models import Recommendation, Follow, CustomUser, Pin, PinArticle
+from .models import Recommendation, Follow, CustomUser, Pin, PinArticle, Notification
 
 User = get_user_model()
 
@@ -402,7 +405,50 @@ class FollowingListView(APIView):
         # Use the Follow model to get all users followed by the current user
         following = User.objects.filter(followed_by__follower=user)
         serializer = UserSerializer(following, many=True)
-        return Response({"results": serializer.data})
+        return Response({"results": serializer.data}, status=status.HTTP_204_NO_CONTENT)
+
+class NotificationPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+class NotificationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        notifications = Notification.objects.filter(user=user, read_at__isnull=True)
+
+        paginator = NotificationPagination()
+        paginated_notifications = paginator.paginate_queryset(notifications, request)
+
+        serializer = NotificationSerializer(paginated_notifications, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+# lookup_field ni urlga bog'liqlgi bor
+
+class NotificationDetailView(APIView):
+    def get(self, request, pk):
+        try:
+            notification = Notification.objects.get(pk=pk)
+        except Notification.DoesNotExist:
+            raise NotFound('Notification not found.')
+
+        serializer = NotificationSerializer(notification)
+        return Response(serializer.data)
+
+    def patch(self, request, pk):
+        try:
+            notification = Notification.objects.get(pk=pk)
+        except Notification.DoesNotExist:
+            raise NotFound('Notification not found.')
+
+        read = request.data.get('read', None)
+        if read is not None:
+            notification.read_at = timezone.now() if read else None
+            notification.save()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class FollowerListView(ListAPIView):
