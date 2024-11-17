@@ -104,3 +104,18 @@ class Clap(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.article.title} - {self.count}'
+
+class Report(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    message = models.TextField() 
+
+    class Meta:
+        db_table = 'report'
+        verbose_name = "Report"
+        verbose_name_plural = "Reports"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.message}'

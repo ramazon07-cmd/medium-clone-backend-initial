@@ -7,7 +7,8 @@ from .views import (
     CommentsView,
     ArticleDetailCommentsView,
     FavoriteArticleView,
-    ClapView
+    ClapView,
+    ReportArticleView
 )
 from users.views import PinView, ArchiveView
 
@@ -25,4 +26,5 @@ urlpatterns = [
     path('articles/<int:id>/archive/', ArchiveView.as_view(), name='article-archive'),
     path('articles/<int:id>/pin/', PinView.as_view(), name='pin_article'),
     path('articles/<int:id>/unpin/', PinView.as_view(), name='unpin_article'),
+    path('articles/<int:id>/report/', ReportArticleView.as_view(), name='report_article'),
 ]

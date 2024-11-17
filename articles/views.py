@@ -3,13 +3,15 @@ from rest_framework.response import Response
 from django_redis import get_redis_connection
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
-from .models import Article, TopicFollow, Topic, Comment, Favorite, Clap
+from .models import Article, TopicFollow, Topic, Comment, Favorite, Clap, Report
 from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.pagination import PageNumberPagination
 from .filters import ArticleFilter
 from rest_framework.decorators import action
 from users.models import ReadingHistory
+from django.utils import timezone
 from django.shortcuts import get_object_or_404
-from .serializers import ArticleSerializer, CommentSerializer, ArticleDetailCommentsSerializer, ClapSerializer
+from .serializers import ArticleSerializer, CommentSerializer, ArticleDetailCommentsSerializer, ClapSerializer, ReportSerializer
 from rest_framework.views import APIView
 class ArticlesView(viewsets.ModelViewSet):
     queryset = Article.objects.filter(status__iexact="publish")
@@ -212,3 +214,50 @@ class ClapView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         else:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+class ReportPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+class ReportView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        notifications = Report.objects.filter(user=user, read_at__isnull=True)
+
+        paginator = ReportPagination()
+        paginated_notifications = paginator.paginate_queryset(notifications, request)
+
+        serializer = ReportSerializer(paginated_notifications, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
+# lookup_field ni urlga bog'liqlgi bor
+
+class ReportArticleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, id):
+        user = request.user
+        article = Article.objects.filter(id=id).first()
+
+        if not article:
+            return Response({"detail": "Maqola topilmadi."}, status=status.HTTP_404_NOT_FOUND)
+
+        if article.status == 'trash':
+            return Response({"detail": "No Article matches the given query."}, status=status.HTTP_404_NOT_FOUND)
+
+        if Report.objects.filter(user=user, article=article).exists():
+            return Response({"detail": "Ushbu maqola allaqachon shikoyat qilingan."}, status=status.HTTP_400_BAD_REQUEST)
+
+        report = Report.objects.create(user=user, article=article, created_at=timezone.now())
+
+        report_count = Report.objects.filter(article=article).count()
+
+        if report_count >= 3:
+            article.status = 'trash'
+            article.save()
+            return Response({"detail": "Maqola bir nechta shikoyatlar tufayli olib tashlandi."}, status=status.HTTP_200_OK)
+
+        return Response({"detail": "Shikoyat yuborildi."}, status=status.HTTP_201_CREATED)
