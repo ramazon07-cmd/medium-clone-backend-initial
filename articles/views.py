@@ -1,9 +1,9 @@
-from rest_framework import status, viewsets, generics
+from rest_framework import status, viewsets, generics, permissions
 from rest_framework.response import Response
 from django_redis import get_redis_connection
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
-from .models import Article, TopicFollow, Topic, Comment, Favorite, Clap, Report
+from .models import Article, TopicFollow, Topic, Comment, Favorite, Clap, Report, FAQ
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from .filters import ArticleFilter
@@ -11,8 +11,10 @@ from rest_framework.decorators import action
 from users.models import ReadingHistory
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
-from .serializers import ArticleSerializer, CommentSerializer, ArticleDetailCommentsSerializer, ClapSerializer, ReportSerializer
+from .serializers import ArticleSerializer, CommentSerializer, ArticleDetailCommentsSerializer, ClapSerializer, ReportSerializer, FAQSerializer
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+
 class ArticlesView(viewsets.ModelViewSet):
     queryset = Article.objects.filter(status__iexact="publish")
     serializer_class = ArticleSerializer
@@ -264,3 +266,12 @@ class ReportArticleView(APIView):
             return Response({"detail": "Maqola bir nechta shikoyatlar tufayli olib tashlandi."}, status=status.HTTP_200_OK)
 
         return Response({"detail": "Shikoyat yuborildi."}, status=status.HTTP_201_CREATED)
+
+class FAQListView(APIView):
+    permission_classes = [AllowAny]
+    authentication_classes = [None]  
+
+    def get(self, request, *args, **kwargs):
+        faqs = FAQ.objects.all()
+        serializer = FAQSerializer(faqs, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

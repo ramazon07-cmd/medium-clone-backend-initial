@@ -109,7 +109,7 @@ class Report(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
-    message = models.TextField() 
+    message = models.TextField()
 
     class Meta:
         db_table = 'report'
@@ -119,3 +119,15 @@ class Report(models.Model):
 
     def __str__(self):
         return f'{self.message}'
+
+class FAQ(models.Model):
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
+
+    class Meta:
+        db_table = 'faq'
+        verbose_name = "FAQ"
+        verbose_name_plural = "FAQS"
+
+    def __str__(self):
+        return f'{self.question}'

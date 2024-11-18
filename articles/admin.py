@@ -1,9 +1,10 @@
-from .models import Article, Topic, Comment, Report
+from .models import Article, Topic, Comment, Report, FAQ
 from django.contrib import admin
 
 admin.site.register(Article)
 admin.site.register(Comment)
 admin.site.register(Topic)
+admin.site.register(FAQ)
 admin.site.register(Report)
 class ClapAdmin(admin.ModelAdmin):
     list_display = ('user', 'article', 'count')

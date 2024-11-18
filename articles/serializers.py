@@ -1,11 +1,16 @@
 from rest_framework import serializers
-from .models import Article, Topic, TopicFollow, Comment, Clap, Report
+from .models import Article, Topic, TopicFollow, Comment, Clap, Report, FAQ
 from users.models import CustomUser
 
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ['id', 'article', 'message', 'created_at', 'read_at']
+
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = ['id', 'question', 'answer']
 
 
 class TopicSerializer(serializers.ModelSerializer):
