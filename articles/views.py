@@ -10,6 +10,7 @@ from .filters import ArticleFilter
 from rest_framework.decorators import action
 from users.models import ReadingHistory
 from django.utils import timezone
+from django.views import View
 from django.shortcuts import get_object_or_404
 from .serializers import ArticleSerializer, CommentSerializer, ArticleDetailCommentsSerializer, ClapSerializer, ReportSerializer, FAQSerializer
 from rest_framework.views import APIView
@@ -267,11 +268,7 @@ class ReportArticleView(APIView):
 
         return Response({"detail": "Shikoyat yuborildi."}, status=status.HTTP_201_CREATED)
 
-class FAQListView(APIView):
-    permission_classes = [AllowAny]
-    authentication_classes = [None]  
-
-    def get(self, request, *args, **kwargs):
-        faqs = FAQ.objects.all()
-        serializer = FAQSerializer(faqs, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+class FAQListView(generics.ListAPIView):
+    queryset = FAQ.objects.all()
+    serializer_class = FAQSerializer
+    permission_classes = [permissions.AllowAny]

@@ -25,6 +25,7 @@ def test_faq_list_view(api_client):
 
     client = api_client()
     response = client.get('/articles/faqs/')
+    print(response.data)
 
     assert response.status_code == status.HTTP_200_OK
 
