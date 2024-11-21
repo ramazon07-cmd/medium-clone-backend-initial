@@ -204,10 +204,10 @@ WSGI_APPLICATION = "core.wsgi.app"
 DATABASES = {
     'default': {
         'ENGINE': config('DB_ENGINE', default='django.db.backends.sqlite3'),
-        'NAME': config('DB_NAME', default='db.sqlite3'),
-        'USER': config('DB_USER', default=''),
-        'PASSWORD': config('DB_PASSWORD', default=''),
-        'HOST': config('DB_HOST', default=''),
+        'NAME': config('POSTGRES_DATABASE', default='db.sqlite3'),
+        'USER': config('POSTGRES_USER', default=''),
+        'PASSWORD': config('POSTGRES_PASSWORD', default=''),
+        'HOST': config('POSTGRES_HOST', default=''),
         'PORT': config('DB_PORT', default=''),
     }
 }
