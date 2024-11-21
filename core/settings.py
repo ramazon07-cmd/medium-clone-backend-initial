@@ -63,6 +63,7 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
     'core.middlewares.CustomLocaleMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -149,11 +150,11 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=10),
 }
 
-REDIS_HOST = config('REDIS_HOST', default='localhost')
-REDIS_PORT = config('REDIS_PORT', default='6379')
-REDIS_DB = config('REDIS_DB', default='1')
+# REDIS_HOST = config('REDIS_HOST', default='localhost')
+# REDIS_PORT = config('REDIS_PORT', default='6379')
+# REDIS_DB = config('REDIS_DB', default='1')
 
-REDIS_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}'
+REDIS_URL = config('REDIS_URL')
 
 logger.info(f"Using redis | URL: {REDIS_URL}")
 
@@ -186,7 +187,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "core.wsgi.application"
+# WSGI_APPLICATION = "core.wsgi.application"
+WSGI_APPLICATION = "core.wsgi.app"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -262,6 +264,8 @@ STATIC_ROOT = BASE_DIR / "static"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -283,25 +287,25 @@ EMAIL_PORT = config('EMAIL_PORT', default='')
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'intercept': {
-            '()': InterceptHandler,
-            'level': 0,
-        },
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'django.log',
-        },
-    },
-    'loggers': {
-        '': {
-            'handlers': ['intercept', 'file'],
-            'level': "DEBUG",
-            'propagate': True,
-        },
-    }
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'intercept': {
+#             '()': InterceptHandler,
+#             'level': 0,
+#         },
+#         'file': {
+#             'level': 'DEBUG',
+#             'class': 'logging.FileHandler',
+#             'filename': 'django.log',
+#         },
+#     },
+#     'loggers': {
+#         '': {
+#             'handlers': ['intercept', 'file'],
+#             'level': "DEBUG",
+#             'propagate': True,
+#         },
+#     }
+# }
