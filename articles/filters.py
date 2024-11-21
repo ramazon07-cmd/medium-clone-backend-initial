@@ -2,6 +2,7 @@ import django_filters
 from .models import Article
 from django.db import models
 from django.db.models import Q
+from users.models import ReadingHistory
 
 class ArticleFilter(django_filters.FilterSet):
     is_recommend = django_filters.BooleanFilter(method='filter_is_recommend') # method orqali funksiyalarga ulash
@@ -18,7 +19,7 @@ class ArticleFilter(django_filters.FilterSet):
         if value:
             return queryset.filter(models.Q(more_recommend__isnull=False) & models.Q(less_recommend__isnull=True)).distinct()
         return queryset
-    
+
     def filter_reading_history(self, queryset, name, value):
         if value and self.request.user.is_authenticated:
             user_history = ReadingHistory.objects.filter(user=self.request.user)
@@ -33,7 +34,7 @@ class ArticleFilter(django_filters.FilterSet):
             Q(content__icontains=value) |
             Q(topics__name__icontains=value)
         ).distinct()
-    
+
     def filter_user_favorites(self, queryset, name, value):
         if value:
             user = self.request.user
