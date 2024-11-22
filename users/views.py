@@ -474,10 +474,8 @@ class ArchiveView(APIView):
     def post(self, request, id):
         article = get_object_or_404(Article, pk=id)
 
-        # Get or create a Pin for the user
         pin, _ = Pin.objects.get_or_create(user=request.user)
 
-        # Now get or create a PinArticle with the associated pin
         clap, created = PinArticle.objects.get_or_create(
             user=request.user,
             article=article,
@@ -498,7 +496,6 @@ class ArchiveView(APIView):
     def delete(self, request, id):
         article = get_object_or_404(Article, pk=id)
 
-        # Delete the PinArticle associated with the user, article, and pin
         pin = Pin.objects.filter(user=request.user).first()
         if pin:
             claps_deleted, _ = PinArticle.objects.filter(user=request.user, article=article, pin=pin).delete()
@@ -516,14 +513,11 @@ class PinView(APIView):
     def post(self, request, id):
         article = get_object_or_404(Article, pk=id)
 
-        # Get or create a Pin for the user
         pin, _ = Pin.objects.get_or_create(user=request.user)
 
-        # Check if the article is already pinned by this user
         if PinArticle.objects.filter(user=request.user, article=article, pin=pin).exists():
             return Response({"detail": "Article already pinned."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Now get or create a PinArticle with the associated pin
         clap, created = PinArticle.objects.get_or_create(
             user=request.user,
             article=article,
@@ -545,7 +539,6 @@ class PinView(APIView):
     def delete(self, request, id):
         article = get_object_or_404(Article, pk=id)
 
-        # Delete the PinArticle associated with the user, article, and pin
         pin = Pin.objects.filter(user=request.user).first()
         if pin:
             claps_deleted, _ = PinArticle.objects.filter(user=request.user, article=article, pin=pin).delete()

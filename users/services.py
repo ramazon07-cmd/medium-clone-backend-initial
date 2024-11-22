@@ -24,7 +24,7 @@ User = get_user_model()
 class TokenService:
     @classmethod
     def get_redis_client(cls) -> redis.Redis:
-        return redis.Redis.from_url(settings.REDIS_URl)
+        return redis.Redis.from_url(settings.REDIS_URL)
 
     @classmethod
     def get_valid_tokens(cls, user_id: int, token_type: TokenType) -> set:
@@ -118,7 +118,7 @@ class SendEmailService:
 class OTPService:
     @classmethod
     def get_redis_conn(cls) -> redis.Redis:
-        return redis.Redis.from_url(settings.REDIS_URl)
+        return redis.Redis.from_url(settings.REDIS_URL)
 
     @classmethod
     def generate_otp(

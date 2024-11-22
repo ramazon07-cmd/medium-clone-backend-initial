@@ -79,9 +79,7 @@ class CustomUser(AbstractUser):
 
     @property
     def full_name(self):
-        """Returns the full name of the user"""
-        names = [self.first_name, self.middle_name, self.last_name]
-        return " ".join([name for name in names if name])  # Filter out empty or None values
+        return f"{self.last_name} {self.first_name} {self.middle_name}"
 
 
 class Recommendation(models.Model):
