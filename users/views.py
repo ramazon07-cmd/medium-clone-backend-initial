@@ -324,9 +324,7 @@ class RecommendationView(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-def get_popular_authors():
-    authors = User.objects.annotate(num_articles=Count('article')).order_by('-num_articles')[:10]
-    return authors
+
 #
 # class PopularAuthorsView(APIView):
 #     permission_classes = [IsAuthenticated]
@@ -345,6 +343,10 @@ def get_popular_authors():
 #
 #         return Response({"detail": "Successfully unfollowed."}, status=status.HTTP_204_NO_CONTENT)
 
+def get_popular_authors():
+    authors = User.objects.annotate(num_articles=Count('article')).order_by('-num_articles')[:10]
+    return authors
+
 class PopularAuthorsPagination(PageNumberPagination):
     page_size = 10
 
@@ -352,20 +354,13 @@ class PopularAuthorsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        queryset = CustomUser.objects.annotate(
-            article_count=Count('clapped_articles')
-        )
+        queryset = CustomUser.objects.annotate(article_count=Count('clapped_articles'))
+
+        if queryset.filter(article_count=0).exists():
+            return Response({"count": 0, "next": None, "previous": None, "results": []})
+
         serializer = UserSerializer(queryset, many=True)
-        return Response({"results": serializer.data})
-
-    def delete(self, request, id):
-        user_to_unfollow = get_object_or_404(User, id=id)
-
-        if not request.user.following.filter(id=user_to_unfollow.id).exists():
-            return Response({"detail": "You are not following this user."}, status=status.HTTP_404_NOT_FOUND)
-
-        request.user.following.remove(user_to_unfollow)
-        return Response({"detail": "Successfully unfollowed."}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"count": queryset.count(), "next": None, "previous": None, "results": serializer.data})
 
 
 class AuthorFollowView(APIView):
