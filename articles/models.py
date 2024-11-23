@@ -40,7 +40,10 @@ class Comment(models.Model):
         return f"Comment by {self.user.username} on {self.article.title}"
 
     class Meta:
-        ordering = ['created_at']
+        db_table = "comment"
+        verbose_name = "Comment"
+        verbose_name_plural = "Comments"
+        ordering = ["-created_at"]
 
 class Article(models.Model):
     id = models.AutoField(primary_key=True)
