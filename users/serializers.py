@@ -175,3 +175,12 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ['id', 'user', 'message', 'created_at', 'read_at']
+
+class PopularAuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'avatar']
+
+def get_popular_authors():
+    authors = User.objects.annotate(num_articles=Count('article')).order_by('-num_articles')[:10]
+    return authors

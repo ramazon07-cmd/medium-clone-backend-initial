@@ -16,6 +16,7 @@ def file_upload(instance, filename):
 
 class CustomUser(AbstractUser):
     middle_name = models.CharField(max_length=30, blank=True, null=True)
+    # popularity = models.IntegerField(null=True, blank=True)
     avatar = ResizedImageField(size=[300, 300], crop=['top', 'left'], upload_to=file_upload, blank=True)
     birth_year = models.IntegerField(
         validators=[
@@ -25,6 +26,7 @@ class CustomUser(AbstractUser):
         null=True,
         blank=True
     )
+    is_author = models.BooleanField(default=False)
     following = models.ManyToManyField(
         'self', related_name='followers_set', symmetrical=False, blank=True
     )
@@ -50,6 +52,10 @@ class CustomUser(AbstractUser):
         super().clean()
         if self.birth_year is not None and not (settings.BIRTH_YEAR_MIN < self.birth_year < settings.BIRTH_YEAR_MAX):
             raise ValidationError(BIRTH_YEAR_ERROR_MSG)
+
+    @property
+    def popularity(self):
+        return self.articles.aggregate(Sum('views_count'))['views_count__sum']
 
     def save(self, *args, **kwargs):
         self.clean()

@@ -8,7 +8,7 @@ from django_redis import get_redis_connection
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, Exists, OuterRef
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from articles.models import Article
@@ -29,6 +29,7 @@ from .serializers import (
     ResetPasswordResponseSerializer,
     ForgotPasswordVerifyResponseSerializer,
     ForgotPasswordResponseSerializer,
+    PopularAuthorSerializer
 )
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.pagination import PageNumberPagination
@@ -326,22 +327,44 @@ class RecommendationView(APIView):
 def get_popular_authors():
     authors = User.objects.annotate(num_articles=Count('article')).order_by('-num_articles')[:10]
     return authors
+#
+# class PopularAuthorsView(APIView):
+#     permission_classes = [IsAuthenticated]
+#
+#     def get(self, request, *args, **kwargs):
+#         authors = get_popular_authors()
+#         return Response(authors, status=status.HTTP_200_OK)
+#
+#     def delete(self, request, id):
+#         user_to_unfollow = get_object_or_404(User, id=id)
+#
+#         if not request.user.is_following(user_to_unfollow):
+#             return Response({"detail": "You are not following this user."}, status=status.HTTP_404_NOT_FOUND)
+#
+#         request.user.unfollow(user_to_unfollow)
+#
+#         return Response({"detail": "Successfully unfollowed."}, status=status.HTTP_204_NO_CONTENT)
+
+class PopularAuthorsPagination(PageNumberPagination):
+    page_size = 10
 
 class PopularAuthorsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        authors = get_popular_authors()
-        return Response(authors, status=status.HTTP_200_OK)
+        queryset = CustomUser.objects.annotate(
+            article_count=Count('clapped_articles')
+        )
+        serializer = UserSerializer(queryset, many=True)
+        return Response({"results": serializer.data})
 
     def delete(self, request, id):
         user_to_unfollow = get_object_or_404(User, id=id)
 
-        if not request.user.is_following(user_to_unfollow):
+        if not request.user.following.filter(id=user_to_unfollow.id).exists():
             return Response({"detail": "You are not following this user."}, status=status.HTTP_404_NOT_FOUND)
 
-        request.user.unfollow(user_to_unfollow)
-
+        request.user.following.remove(user_to_unfollow)
         return Response({"detail": "Successfully unfollowed."}, status=status.HTTP_204_NO_CONTENT)
 
 

@@ -150,9 +150,9 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=10),
 }
 
-# REDIS_HOST = config('REDIS_HOST', default='localhost')
-# REDIS_PORT = config('REDIS_PORT', default='6379')
-# REDIS_DB = config('REDIS_DB', default='1')
+REDIS_HOST = config('REDIS_HOST', default='localhost')
+REDIS_PORT = config('REDIS_PORT', default='6379')
+REDIS_DB = config('REDIS_DB', default='1')
 
 REDIS_URL = config('REDIS_URL')
 
@@ -259,10 +259,10 @@ LOCALE_PATHS = [
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    os.path.join(BASE_DIR, 'static'),
 ]
-STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"
