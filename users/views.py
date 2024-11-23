@@ -8,7 +8,7 @@ from django_redis import get_redis_connection
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404
 from articles.models import Article
@@ -323,21 +323,25 @@ class RecommendationView(APIView):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+def get_popular_authors():
+    authors = User.objects.annotate(num_articles=Count('article')).order_by('-num_articles')[:10]
+    return authors
+
 class PopularAuthorsView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get(self, request, *args, **kwargs):
+        authors = get_popular_authors()
+        return Response(authors, status=status.HTTP_200_OK)
+
     def delete(self, request, id):
-        # Get the user to unfollow
         user_to_unfollow = get_object_or_404(User, id=id)
 
-        # Check if the current user is following the other user
         if not request.user.is_following(user_to_unfollow):
             return Response({"detail": "You are not following this user."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Perform the unfollow action
         request.user.unfollow(user_to_unfollow)
 
-        # Return a success response
         return Response({"detail": "Successfully unfollowed."}, status=status.HTTP_204_NO_CONTENT)
 
 
