@@ -99,7 +99,6 @@ env/
 # Custom
 .vscode/
 .idea/
-static
 staticfiles
 .ruff_cache
 media
