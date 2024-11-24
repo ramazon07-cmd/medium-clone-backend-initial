@@ -4,7 +4,7 @@ from django_redis import get_redis_connection
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated
 from .models import Article, TopicFollow, Topic, Comment, Favorite, Clap, Report, FAQ
-from rest_framework.exceptions import NotFound, PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.pagination import PageNumberPagination
 from .filters import ArticleFilter
 from rest_framework.decorators import action
@@ -29,6 +29,21 @@ class ArticlesView(viewsets.ModelViewSet):
         if self.action in ['create', 'update', 'partial_update']:
             return ArticleSerializer
         return ArticleSerializer
+
+    def get_queryset(self):
+        queryset = Article.objects.filter(status__iexact="publish")
+
+        get_top_articles = self.request.query_params.get('get_top_articles')
+        if get_top_articles:
+            try:
+                n = int(get_top_articles)
+                if n <= 0:
+                    raise ValidationError("Enter a positive number.")
+                queryset = queryset.order_by('-views_count')[:n]
+            except ValueError:
+                raise ValidationError({"get_top_articles": ["Enter a number."]})
+
+        return queryset
 
     def create(self, request, *args, **kwargs):
         author = request.user
