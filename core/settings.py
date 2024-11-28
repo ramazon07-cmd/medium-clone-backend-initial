@@ -154,7 +154,7 @@ REDIS_HOST = config('REDIS_HOST', default='localhost')
 REDIS_PORT = config('REDIS_PORT', default='6379')
 REDIS_DB = config('REDIS_DB', default='1')
 
-REDIS_URL = config('REDIS_URL')
+REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')
 
 logger.info(f"Using redis | URL: {REDIS_URL}")
 
