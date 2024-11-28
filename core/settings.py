@@ -201,19 +201,34 @@ WSGI_APPLICATION = "core.wsgi.application"
 # }
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
+#         'NAME': config('POSTGRES_DATABASE', default='db.sqlite3'),
+#         'USER': config('POSTGRES_USER', default=''),
+#         'PASSWORD': config('POSTGRES_PASSWORD', default=''),
+#         'HOST': config('POSTGRES_HOST', default=''),
+#         'PORT': config('DB_PORT', default=''),
+#         'OPTIONS': {
+#             'sslmode': 'require',
+#         },
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
-        'NAME': config('POSTGRES_DATABASE', default='db.sqlite3'),
-        'USER': config('POSTGRES_USER', default=''),
-        'PASSWORD': config('POSTGRES_PASSWORD', default=''),
-        'HOST': config('POSTGRES_HOST', default=''),
-        'PORT': config('DB_PORT', default=''),
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'medium-db',
+        'USER': 'medium-db_owner',
+        'PASSWORD': 'uO8lebmorPI2',
+        'HOST': 'ep-old-pine-a2inlpis.eu-central-1.aws.neon.tech',
+        'PORT': '5432',
         'OPTIONS': {
             'sslmode': 'require',
         },
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
