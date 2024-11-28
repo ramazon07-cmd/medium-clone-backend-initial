@@ -187,8 +187,8 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = "core.wsgi.application"
-WSGI_APPLICATION = "core.wsgi.app"
+WSGI_APPLICATION = "core.wsgi.application"
+# WSGI_APPLICATION = "core.wsgi.app"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -203,7 +203,7 @@ WSGI_APPLICATION = "core.wsgi.app"
 
 DATABASES = {
     'default': {
-        'ENGINE': config('DB_ENGINE', default='django.db.backends.sqlite3'),
+        'ENGINE': config('DB_ENGINE', default='django.db.backends.postgresql'),
         'NAME': config('POSTGRES_DATABASE', default='db.sqlite3'),
         'USER': config('POSTGRES_USER', default=''),
         'PASSWORD': config('POSTGRES_PASSWORD', default=''),
