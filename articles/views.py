@@ -100,11 +100,24 @@ class ArticlesView(viewsets.ModelViewSet):
         serializer = self.get_serializer(self.queryset, many=True)
         return Response(serializer.data)
 
+    # def destroy(self, request, *args, **kwargs):
+    #     article = self.get_object()
+    #     article.status = "trash"
+    #     article.save()
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
+
     def destroy(self, request, *args, **kwargs):
-        article = self.get_object()
-        article.status = "trash"
-        article.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            article = self.get_object()
+            article.status = "trash"
+            article.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Article.DoesNotExist:
+            return Response({"detail": "Article not found."}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 class TopicFollowView(viewsets.ViewSet):
     def create(self, request, topic_id=None):
