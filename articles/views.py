@@ -107,19 +107,30 @@ class ArticlesView(viewsets.ModelViewSet):
     #     return Response(status=status.HTTP_204_NO_CONTENT)
 
     def destroy(self, request, *args, **kwargs):
-        article = self.get_object()
+        try:
+            article = self.get_object()
+            if not (article.author == request.user or request.user.has_perm('articles.delete_article')):
+                return Response(
+                    {"detail": "You do not have permission to delete this article."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
 
-        if not (article.author == request.user or request.user.has_perm('articles.delete_article')):
+            article.status = "trash"
+            article.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Article.DoesNotExist:
             return Response(
-                {"detail": "You do not have permission to delete this article."},
-                status=status.HTTP_403_FORBIDDEN
+                {"detail": "Article not found."},
+                status=status.HTTP_404_NOT_FOUND
             )
 
-        article.status = "trash"
-        article.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
+        except Exception as e:
+            return Response(
+                {"detail": f"An unexpected error occurred: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+            
 class TopicFollowView(viewsets.ViewSet):
     def create(self, request, topic_id=None):
         user = request.user
