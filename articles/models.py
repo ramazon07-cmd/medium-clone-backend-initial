@@ -15,6 +15,7 @@ class Topic(models.Model):
         ordering = ['name']
     def __str__(self):
         return self.name
+        
 class Comment(models.Model):
     article = models.ForeignKey(
         'Article',
